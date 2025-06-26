@@ -161,8 +161,7 @@ async function syncQuotes() {
   populateCategories();
   filterQuote();
 
-  document.getElementById("syncNotice").textContent =
-    "Quotes synced with server. Local data was replaced.";
+  document.getElementById("syncNotice").textContent = "Quotes synced with server!";
   setTimeout(() => {
     document.getElementById("syncNotice").textContent = "";
   }, 5000);
