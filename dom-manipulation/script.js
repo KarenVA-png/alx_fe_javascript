@@ -4,7 +4,7 @@ let quotes = [
   { text: "Why so serious?", category: "Fun" }
 ];
 
-// Load local quotes
+// --- LOCAL STORAGE ---
 function loadQuotes() {
   const storedQuotes = localStorage.getItem("quotes");
   if (storedQuotes) {
@@ -24,6 +24,7 @@ function loadFilter() {
   return localStorage.getItem("selectedCategory") || "all";
 }
 
+// --- POPULATE FILTER DROPDOWN ---
 function populateCategories() {
   const categories = quotes.map(q => q.category);
   const uniqueCategories = [...new Set(categories)];
@@ -42,6 +43,7 @@ function populateCategories() {
   filter.value = savedFilter;
 }
 
+// --- FILTER & DISPLAY QUOTE ---
 function filterQuote() {
   const selected = document.getElementById("categoryFilter").value;
   saveFilter(selected);
@@ -66,6 +68,7 @@ function showRandomQuote() {
   filterQuote();
 }
 
+// --- FORM TO ADD QUOTE ---
 function addQuote() {
   const newText = document.getElementById("newQuoteText").value.trim();
   const newCategory = document.getElementById("newQuoteCategory").value.trim();
@@ -77,16 +80,7 @@ function addQuote() {
     populateCategories();
     alert("Quote added!");
 
-    // Simulate sending to server
-    fetch("https://jsonplaceholder.typicode.com/posts", {
-      method: "POST",
-      body: JSON.stringify(newQuote),
-      headers: {
-        "Content-type": "application/json; charset=UTF-8"
-      }
-    }).then(() => {
-      console.log("Quote sent to server.");
-    });
+    postQuoteToServer(newQuote); // Send to server
 
     document.getElementById("newQuoteText").value = "";
     document.getElementById("newQuoteCategory").value = "";
@@ -116,32 +110,7 @@ function createAddQuoteForm() {
   document.body.appendChild(formDiv);
 }
 
-// Sync with server and overwrite local data
-function syncWithServer() {
-  fetch("https://jsonplaceholder.typicode.com/posts")
-    .then(response => response.json())
-    .then(serverQuotes => {
-      // Convert server data into our format (mocking only)
-      const newQuotes = serverQuotes.slice(0, 5).map(post => ({
-        text: post.title,
-        category: "Server"
-      }));
-
-      // Replace local quotes (conflict resolution)
-      quotes = newQuotes;
-      saveQuotes();
-      populateCategories();
-      filterQuote();
-
-      document.getElementById("syncNotice").textContent =
-        "Quotes synced with server. Local changes were replaced.";
-      setTimeout(() => {
-        document.getElementById("syncNotice").textContent = "";
-      }, 5000);
-    });
-}
-
-// Export quotes
+// --- EXPORT / IMPORT ---
 document.getElementById("exportBtn").addEventListener("click", function () {
   const blob = new Blob([JSON.stringify(quotes, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
@@ -152,7 +121,6 @@ document.getElementById("exportBtn").addEventListener("click", function () {
   URL.revokeObjectURL(url);
 });
 
-// Import quotes
 function importFromJsonFile(event) {
   const fileReader = new FileReader();
   fileReader.onload = function (event) {
@@ -165,14 +133,53 @@ function importFromJsonFile(event) {
   fileReader.readAsText(event.target.files[0]);
 }
 
-// Initial setup
+// --- MOCK SERVER SYNC ---
+function fetchQuotesFromServer() {
+  return fetch("https://jsonplaceholder.typicode.com/posts")
+    .then(response => response.json())
+    .then(serverQuotes => {
+      return serverQuotes.slice(0, 5).map(post => ({
+        text: post.title,
+        category: "Server"
+      }));
+    });
+}
+
+function postQuoteToServer(quote) {
+  fetch("https://jsonplaceholder.typicode.com/posts", {
+    method: "POST",
+    body: JSON.stringify(quote),
+    headers: {
+      "Content-type": "application/json; charset=UTF-8"
+    }
+  }).then(() => {
+    console.log("Quote posted to server.");
+  });
+}
+
+function syncQuotes() {
+  fetchQuotesFromServer().then(serverQuotes => {
+    quotes = serverQuotes; // Conflict resolution: server wins
+    saveQuotes();
+    populateCategories();
+    filterQuote();
+
+    document.getElementById("syncNotice").textContent =
+      "Quotes synced with server. Local data was replaced.";
+    setTimeout(() => {
+      document.getElementById("syncNotice").textContent = "";
+    }, 5000);
+  });
+}
+
+// --- INITIAL SETUP ---
 loadQuotes();
 populateCategories();
 createAddQuoteForm();
 filterQuote();
 
 document.getElementById("newQuote").addEventListener("click", showRandomQuote);
-document.getElementById("syncNowBtn").addEventListener("click", syncWithServer);
+document.getElementById("syncNowBtn").addEventListener("click", syncQuotes);
 
-// Auto-sync every 30 seconds
-setInterval(syncWithServer, 30000);
+// Auto sync every 30 sec
+setInterval(syncQuotes, 30000);
