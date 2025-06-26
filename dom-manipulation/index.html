@@ -8,6 +8,9 @@
 <body>
   <h1>Dynamic Quote Generator</h1>
 
+  <!-- Sync Status -->
+  <div id="syncNotice" style="color: red;"></div>
+
   <!-- Category Filter Dropdown -->
   <select id="categoryFilter" onchange="filterQuote()">
     <option value="all">All Categories</option>
@@ -18,6 +21,7 @@
 
   <!-- Buttons -->
   <button id="newQuote">Show New Quote</button>
+  <button id="syncNowBtn">Sync Now</button>
   <button id="exportBtn">Export Quotes to JSON</button>
   <input type="file" id="importFile" accept=".json" onchange="importFromJsonFile(event)" />
 
