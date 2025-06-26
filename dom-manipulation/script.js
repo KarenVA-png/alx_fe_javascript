@@ -133,43 +133,39 @@ function importFromJsonFile(event) {
   fileReader.readAsText(event.target.files[0]);
 }
 
-// --- MOCK SERVER SYNC ---
-function fetchQuotesFromServer() {
-  return fetch("https://jsonplaceholder.typicode.com/posts")
-    .then(response => response.json())
-    .then(serverQuotes => {
-      return serverQuotes.slice(0, 5).map(post => ({
-        text: post.title,
-        category: "Server"
-      }));
-    });
+// --- MOCK SERVER SYNC with ASYNC/AWAIT ---
+async function fetchQuotesFromServer() {
+  const response = await fetch("https://jsonplaceholder.typicode.com/posts");
+  const serverQuotes = await response.json();
+  return serverQuotes.slice(0, 5).map(post => ({
+    text: post.title,
+    category: "Server"
+  }));
 }
 
-function postQuoteToServer(quote) {
-  fetch("https://jsonplaceholder.typicode.com/posts", {
+async function postQuoteToServer(quote) {
+  await fetch("https://jsonplaceholder.typicode.com/posts", {
     method: "POST",
     body: JSON.stringify(quote),
     headers: {
       "Content-type": "application/json; charset=UTF-8"
     }
-  }).then(() => {
-    console.log("Quote posted to server.");
   });
+  console.log("Quote posted to server.");
 }
 
-function syncQuotes() {
-  fetchQuotesFromServer().then(serverQuotes => {
-    quotes = serverQuotes; // Conflict resolution: server wins
-    saveQuotes();
-    populateCategories();
-    filterQuote();
+async function syncQuotes() {
+  const serverQuotes = await fetchQuotesFromServer();
+  quotes = serverQuotes; // Conflict resolution: server wins
+  saveQuotes();
+  populateCategories();
+  filterQuote();
 
-    document.getElementById("syncNotice").textContent =
-      "Quotes synced with server. Local data was replaced.";
-    setTimeout(() => {
-      document.getElementById("syncNotice").textContent = "";
-    }, 5000);
-  });
+  document.getElementById("syncNotice").textContent =
+    "Quotes synced with server. Local data was replaced.";
+  setTimeout(() => {
+    document.getElementById("syncNotice").textContent = "";
+  }, 5000);
 }
 
 // --- INITIAL SETUP ---
