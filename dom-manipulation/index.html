@@ -9,7 +9,7 @@
   <h1>Dynamic Quote Generator</h1>
 
   <!-- Category Filter Dropdown -->
-  <select id="categoryFilter" onchange="filterQuotes()">
+  <select id="categoryFilter" onchange="filterQuote()">
     <option value="all">All Categories</option>
   </select>
 
@@ -21,7 +21,7 @@
   <button id="exportBtn">Export Quotes to JSON</button>
   <input type="file" id="importFile" accept=".json" onchange="importFromJsonFile(event)" />
 
-  <!-- Form will be created by JS -->
+  <!-- Add Quote Form will be created by JavaScript -->
   <script src="script.js"></script>
 </body>
 </html>
